@@ -5,10 +5,10 @@ import databases
 import ormar
 import sqlalchemy
 
-from settings import DATABASE_URL
+from settings import PostgresConfiguration
 
 metadata = sqlalchemy.MetaData()
-database = databases.Database(DATABASE_URL)
+database = databases.Database(PostgresConfiguration().postgres_db_path)
 
 
 class Zone(ormar.Model):
