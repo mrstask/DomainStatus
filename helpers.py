@@ -15,7 +15,7 @@ async def populate_domains_to_database(file_name: str, limit: int):
                 await zone.save()
 
             domain_name = domains[i].split('.')[0]
-            domain = Domain(name=domain_name)
+            domain = Domain(domain_name=domain_name)
             domain.zone = zone
             await domain.save()
             i += 1
@@ -23,5 +23,5 @@ async def populate_domains_to_database(file_name: str, limit: int):
 
 if __name__ == '__main__':
     start = time()
-    asyncio.run(populate_domains_to_database('ua.txt', 5))
+    asyncio.run(populate_domains_to_database('ua.txt', 100))
     print("time: ", time() - start)

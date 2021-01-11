@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 import databases
@@ -26,8 +27,8 @@ class Domain(ormar.Model):
         metadata = metadata
         database = database
 
-    id: int = ormar.Integer(primary_key=True, allow_blank=False)
-    name: str = ormar.String(max_length=100, allow_blank=False)
+    pk: int = ormar.Integer(primary_key=True, allow_blank=False)
+    domain_name: str = ormar.String(max_length=100, allow_blank=False)
     zone: str = ormar.ForeignKey(Zone, nullable=True)
 
     status_code: int = ormar.Integer(nullable=True)
@@ -36,6 +37,8 @@ class Domain(ormar.Model):
 
     server: str = ormar.String(max_length=100, nullable=True)
     content_type: str = ormar.String(max_length=100, nullable=True)
+    content_length: str = ormar.Integer(nullable=True)
+    last_modified: datetime = ormar.DateTime(nullable=True)
     encoding: str = ormar.String(max_length=100, nullable=True)
     text: str = ormar.Text(nullable=True)
 
