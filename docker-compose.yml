@@ -1,0 +1,32 @@
+version: "3.5"
+services:
+  domain-db:
+    restart: always
+    container_name: 'domain-db'
+    image: postgres:12
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - domains
+
+  domain-parse-api:
+    build: .
+    restart: always
+    ports:
+      - '8023:8023'
+    env_file:
+      - .env
+    depends_on:
+      - domain-db
+    volumes:
+      - .:/app
+    networks:
+      - domains
+
+networks:
+  linkedin:
+    name: domains

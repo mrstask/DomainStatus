@@ -2,7 +2,7 @@ import asyncio
 from time import time
 import aiohttp
 import uvicorn
-from datetime import datetime
+from email.utils import parsedate_to_datetime
 
 from aiohttp import ClientResponseError, ClientConnectorError, ServerDisconnectedError
 from fastapi import FastAPI
@@ -30,10 +30,10 @@ async def shutdown() -> None:
 
 
 def parse_datetime(date_string: str):
-    if 'GMT' in date_string:
-        return datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S GMT')
-    else:
-        pass
+    try:
+        return parsedate_to_datetime(date_string)
+    except TypeError as e:
+        print(f"{e}")
 
 
 async def request(session):
@@ -41,7 +41,11 @@ async def request(session):
     domain = Domain.objects.filter(pk=pk)
     try:
         async with session.get(url) as response:
-            text = await response.text()
+            try:
+                text = await response.text()
+            except UnicodeDecodeError as e:
+                print(f"{url} {e.reason}")
+                text = None
             last_modified = response.headers.get('Last-Modified')
             if last_modified:
                 last_modified = parse_datetime(last_modified)
@@ -54,29 +58,33 @@ async def request(session):
                                 encoding=response.charset,
                                 last_modified=last_modified,
                                 text=text)
+            print(f"{url} OK")
     except ClientResponseError as e:
-        print(url + e.message)
+        print(f"{url} {e.message}")
         await domain.update(status_code=e.status)
 
     except ClientConnectorError as e:
-        print(url + e.strerror)
+        print(f"{url} {e.strerror}")
         await domain.update(status_code=419)
 
     except ServerDisconnectedError as e:
-        print(url + e.message)
+        print(f"{url} + {e.message}")
         await domain.update(status_code=420)
 
+    except TimeoutError as e:
+        print(f"{url} + {e.errno}")
+        await domain.update(status_code=421)
 
 
 async def task():
     async with aiohttp.ClientSession() as session:
         tasks = [request(session) for _ in range(queue.qsize())]
-        result = await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
 
 @app.get('/')
-async def f():
-    domains = await Domain.objects.filter(status_code=None).all()
+async def f(threads: int):
+    domains = await Domain.objects.filter(status_code=None).limit(threads).all()
     for domain in domains:
         url = f"http://{domain.domain_name}.{domain.zone.name}"
         await queue.put((domain.pk, url))
