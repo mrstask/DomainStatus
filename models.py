@@ -10,22 +10,40 @@ metadata = sqlalchemy.MetaData()
 database = databases.Database(DATABASE_URL)
 
 
-class Category(ormar.Model):
+class Zone(ormar.Model):
     class Meta:
-        tablename = "categories"
+        tablename = 'zones'
         metadata = metadata
         database = database
 
-    id: int = ormar.Integer(primary_key=True)
-    name: str = ormar.String(max_length=100)
+    name: str = ormar.String(primary_key=True, max_length=100, allow_blank=False)
+    useless: bool = ormar.Boolean(default=False)
 
 
-class Item(ormar.Model):
+class Domain(ormar.Model):
     class Meta:
-        tablename = "items"
+        tablename = 'domains'
         metadata = metadata
         database = database
 
-    id: int = ormar.Integer(primary_key=True)
-    name: str = ormar.String(max_length=100)
-    category: Optional[Category] = ormar.ForeignKey(Category, nullable=True)
+    id: int = ormar.Integer(primary_key=True, allow_blank=False)
+    name: str = ormar.String(max_length=100, allow_blank=False)
+    zone: str = ormar.ForeignKey(Zone, nullable=True)
+
+    status_code: int = ormar.Integer(nullable=True)
+    www: bool = ormar.Boolean(default=False)
+    ssl: bool = ormar.Boolean(default=False)
+
+    server: str = ormar.String(max_length=100, nullable=True)
+    content_type: str = ormar.String(max_length=100, nullable=True)
+    encoding: str = ormar.String(max_length=100, nullable=True)
+    text: str = ormar.Text(nullable=True)
+
+
+if __name__ == '__main__':
+    engine = sqlalchemy.create_engine(DATABASE_URL)
+    metadata.drop_all(engine)
+    metadata.create_all(engine)
+
+
+
