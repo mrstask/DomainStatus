@@ -24,5 +24,5 @@ async def populate_domains_to_database(file_name: str, limit: int):
 
 if __name__ == '__main__':
     start = time()
-    asyncio.run(populate_domains_to_database('ua.txt', 10))
+    asyncio.run(populate_domains_to_database('ua.txt', 1000))
     print("time: ", time() - start)
