@@ -5,10 +5,10 @@ import databases
 import ormar
 import sqlalchemy
 
-from settings import PostgresConfiguration
-
+# from settings import PostgresConfiguration
+from settings import DATABASE_URL
 metadata = sqlalchemy.MetaData()
-database = databases.Database(PostgresConfiguration().postgres_db_path)
+database = databases.Database(DATABASE_URL)
 
 
 class Zone(ormar.Model):
@@ -41,9 +41,24 @@ class Domain(ormar.Model):
     last_modified: datetime = ormar.DateTime(nullable=True)
     encoding: str = ormar.String(max_length=100, nullable=True)
     text: str = ormar.Text(nullable=True)
+    locked: bool = ormar.Boolean(default=False)
+
+
+class Task(ormar.Model):
+    class Meta:
+        tablename = 'tasks'
+        metadata = metadata
+        database = database
+
+    pk: int = ormar.Integer(primary_key=True, allow_blank=False)
+    quantity: str = ormar.String(max_length=100, allow_blank=False)
+    threads: str = ormar.ForeignKey(Zone, nullable=True)
+    started: datetime = ormar.DateTime()
+    finished: datetime = ormar.DateTime(nullable=True)
 
 
 if __name__ == '__main__':
+    # engine = sqlalchemy.create_engine(PostgresConfiguration().postgres_db_path)
     engine = sqlalchemy.create_engine(DATABASE_URL)
     metadata.drop_all(engine)
     metadata.create_all(engine)
