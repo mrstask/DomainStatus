@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from time import time
 import aiohttp
 
@@ -51,7 +52,7 @@ async def request(session):
         await domain.update(status_code=421)
 
 
-async def parse_job(threads: int, quantity: int):
+async def parse_job(task_data, threads: int, quantity: int):
     domains = await Domain.objects.filter(status_code=None).filter(locked=False).limit(quantity).all()
     for domain in domains:
         url = f"http://{domain.domain_name}.{domain.zone.name}"
@@ -59,6 +60,7 @@ async def parse_job(threads: int, quantity: int):
         await queue.put((domain.pk, url))
     start = time()
     await create_task(threads)
+    await task_data.update(finished=datetime.now())
     log.debug("time: ", time() - start)
 
 

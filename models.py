@@ -52,7 +52,7 @@ class Task(ormar.Model):
 
     pk: int = ormar.Integer(primary_key=True, allow_blank=False)
     quantity: str = ormar.String(max_length=100, allow_blank=False)
-    threads: str = ormar.ForeignKey(Zone, nullable=True)
+    threads: str = ormar.Integer(nullable=True)
     started: datetime = ormar.DateTime()
     finished: datetime = ormar.DateTime(nullable=True)
 

@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 log = logging.getLogger("uvicorn")
+log.setLevel(logging.DEBUG)
 DATABASE_URL = 'sqlite:///test.db'
 #
 # env = load_dotenv()
